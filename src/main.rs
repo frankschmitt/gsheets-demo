@@ -7,6 +7,7 @@ extern crate hyper_rustls;
 extern crate yup_oauth2 as oauth2;
 use sheets4::Error;
 use sheets4::Sheets;
+use sheets4::api::ValueRange;
 use hyper::{Body, Client, StatusCode, Uri};
 
 #[tokio::main]
@@ -33,47 +34,47 @@ async fn main() {
     .await
     .unwrap();
 
-    let mut rt = tokio::runtime::Runtime::new().unwrap();
-    //let url = ("https://hyper.rs").parse().unwrap();
+    println!("built auth");
     let connector = hyper_rustls::HttpsConnectorBuilder::new()
       .with_native_roots()
       .https_only()
       .enable_http1()
       .build();
-    // Build the hyper client from the HTTPS connector.
-    let client: Client<_, hyper::Body> = Client::builder().build(connector);
+    let client: Client <_, hyper::Body> = hyper::Client::builder().build(connector);
+    println!("built client");
+    let mut hub = Sheets::new(client, auth);
+    println!("created hub");
+    // As the method needs a request, you would usually fill it with the desired information
+    // into the respective structure. Some of the parts shown here might not be applicable !
+    // Values shown here are possibly random and not representative !
+    let mut req = ValueRange::default();
 
-    println!("creating / accessing sheet");
-    let hub = Sheets::new(
-        //hyper::Client::builder().build(hyper_rustls::HttpsConnector::with_native_roots()),
-        //hyper_rustls::HttpsConnectorBuilder::new()
-        //   .with_native_roots()
-        //   .build(),
-        client,
-        auth,
-    );
+    // You can configure optional parameters by calling the respective setters at will, and
+    // execute the final call using `doit()`.
+    // Values shown here are possibly random and not representative !
+    let result = hub.spreadsheets().values_append(req, "spreadsheetId", "range")
+             .value_input_option("amet.")
+             .response_value_render_option("duo")
+             .response_date_time_render_option("ipsum")
+             .insert_data_option("gubergren")
+             .include_values_in_response(true)
+             .doit().await;
 
-    let result = hub
-        .spreadsheets()
-        .get("1TWUpZdjXiquf-LsfbqXEIBVWgZ12XeaZtzrNp3uaHX8") // your spreadsheet id enters here
-        .doit()
-        .await;
-
-    // println!("{:?}",result);
+    println!("appended values to spreadsheet");
     match result {
         Err(e) => match e {
             // The Error enum provides details about what exactly happened.
             // You can also just use its `Debug`, `Display` or `Error` traits
             Error::HttpError(_)
-            | Error::Io(_)
-            | Error::MissingAPIKey
-            | Error::MissingToken(_)
-            | Error::Cancelled
-            | Error::UploadSizeLimitExceeded(_, _)
-            | Error::Failure(_)
-            | Error::BadRequest(_)
-            | Error::FieldClash(_)
-            | Error::JsonDecodeError(_, _) => println!("{}", e),
+        |Error::Io(_)
+        |Error::MissingAPIKey
+        |Error::MissingToken(_)
+        |Error::Cancelled
+        |Error::UploadSizeLimitExceeded(_, _)
+        |Error::Failure(_)
+        |Error::BadRequest(_)
+        |Error::FieldClash(_)
+        |Error::JsonDecodeError(_, _) => println!("{}", e),
         },
         Ok(res) => println!("Success: {:?}", res),
     }
