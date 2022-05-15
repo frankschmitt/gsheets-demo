@@ -162,13 +162,19 @@ async fn main() {
     let create_response = hub.spreadsheets().create(Spreadsheet::default()).doit().await;
     //let ss_id = ss.unwrap().get("spreadsheetId");
     //println!("created spreadsheet, response {:?}", create_response);
-    match create_response {
-        Err(res) => println!("ERROR: {:?}", res),
+    let spreadsheet_id = match create_response {
+        Err(res) => { 
+            println!("ERROR: {:?}", res);
+            // use hard-coded spreadsheet id
+            "1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE".to_string()
+        },
         Ok(res) => {
             println!("Success: {:?}", res);
             // we get a tuple of (body, Spreadsheet); the body doesn't concern us, get just the spreadsheet
             let (_body, sheet) = res;
             println!("id: {:?}", sheet.spreadsheet_id);
+            sheet.spreadsheet_id.unwrap()
+            //"1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE".to_string();
         }
  
     };
@@ -176,8 +182,8 @@ async fn main() {
     // the ID can be obtained from the URL in GSheets, e.g.
     //    https://docs.google.com/spreadsheets/d/1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE/edit#gid=0 => 1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE
     // the option values are available at https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
-    let append_response = hub.spreadsheets().values_append(req, "1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE", "Sheet1!A2:E")
-    //let result = hub.spreadsheets().values_append(req, ss_id , "Sheet1!A2:E")
+    //let append_response = hub.spreadsheets().values_append(req, "1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE", "Sheet1!A2:E")
+    let append_response = hub.spreadsheets().values_append(req, &spreadsheet_id , "Sheet1!A2:E")
              .value_input_option("RAW")
              .response_value_render_option("FORMATTED_VALUE")
              .response_date_time_render_option("SERIAL_NUMBER")
@@ -186,7 +192,7 @@ async fn main() {
              .doit().await;
     
     
-    println!("appended values to spreadsheet");
+    println!("appended values to spreadsheet {:?}, URL: https://docs.google.com/spreadsheets/d/{}", spreadsheet_id, spreadsheet_id);
     match append_response {
         Err(e) => match e {
             // The Error enum provides details about what exactly happened.
