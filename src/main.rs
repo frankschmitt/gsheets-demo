@@ -9,8 +9,7 @@ use sheets4::Error;
 use sheets4::Sheets;
 use sheets4::api::{ValueRange, Spreadsheet};
 use hyper::{Body, Client, StatusCode, Uri};
-use serde_json as json;
-use serde_json::json;
+use chrono::prelude::*;
 
 // excerpt from: https://github.com/Byron/google-apis-rs/blob/main/gen/sheets4-cli/src/main.rs
 /*async fn _spreadsheets_values_update(&self, opt: &ArgMatches<'n>, dry_run: bool, err: &mut InvalidOptionsError)
@@ -149,7 +148,9 @@ async fn main() {
     println!("created hub");
     // set data for insert
     let mut req = ValueRange::default();
-    req.values = Some(vec![vec!["x".to_string()]]);
+    let local = Local::now();
+    let val = local.format("%Y-%m-%d %H:%M:%S").to_string();
+    req.values = Some(vec![vec![val]]);
 
     //let object = json!(12);
     //let mut req: ValueRange = json::value::from_value(object).unwrap();
