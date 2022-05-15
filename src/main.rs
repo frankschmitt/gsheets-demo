@@ -159,11 +159,25 @@ async fn main() {
     // You can configure optional parameters by calling the respective setters at will, and
     // execute the final call using `doit()`.
     // Values shown here are possibly random and not representative !
-    //let ss = hub.spreadsheets().create(Spreadsheet::new()).doit().await;
+    let create_response = hub.spreadsheets().create(Spreadsheet::default()).doit().await;
+    //let ss_id = ss.unwrap().get("spreadsheetId");
+    //println!("created spreadsheet, response {:?}", create_response);
+    match create_response {
+        Err(res) => println!("ERROR: {:?}", res),
+        Ok(res) => {
+            println!("Success: {:?}", res);
+            // we get a tuple of (body, Spreadsheet); the body doesn't concern us, get just the spreadsheet
+            let (_body, sheet) = res;
+            println!("id: {:?}", sheet.spreadsheet_id);
+        }
+ 
+    };
+
     // the ID can be obtained from the URL in GSheets, e.g.
     //    https://docs.google.com/spreadsheets/d/1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE/edit#gid=0 => 1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE
     // the option values are available at https://developers.google.com/sheets/api/reference/rest/v4/ValueInputOption
-    let result = hub.spreadsheets().values_append(req, "1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE", "Sheet1!A2:E")
+    let append_response = hub.spreadsheets().values_append(req, "1WQSoh6FsAPPDF49Idl1x3BQT7gAGCwgaBINwyphTLFE", "Sheet1!A2:E")
+    //let result = hub.spreadsheets().values_append(req, ss_id , "Sheet1!A2:E")
              .value_input_option("RAW")
              .response_value_render_option("FORMATTED_VALUE")
              .response_date_time_render_option("SERIAL_NUMBER")
@@ -173,7 +187,7 @@ async fn main() {
     
     
     println!("appended values to spreadsheet");
-    match result {
+    match append_response {
         Err(e) => match e {
             // The Error enum provides details about what exactly happened.
             // You can also just use its `Debug`, `Display` or `Error` traits
